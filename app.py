@@ -3,7 +3,6 @@ import email
 import os
 import pickle
 import re
-import tempfile
 import traceback
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
@@ -18,15 +17,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_PATH = os.path.join(BASE_DIR, 'DataSets', 'index', 'train.csv')
 MODEL_PATH = os.path.join(BASE_DIR, 'app_model.pkl')
 
-# Configure NLTK data directory (using /tmp on serverless environments like Vercel)
-try:
-    nltk_dir = os.path.join(tempfile.gettempdir(), 'nltk_data')
-    os.makedirs(nltk_dir, exist_ok=True)
-    if nltk_dir not in nltk.data.path:
-        nltk.data.path.append(nltk_dir)
-    nltk.download('stopwords', download_dir=nltk_dir, quiet=True)
-except Exception as e:
-    print(f"NLTK setup note: {e}")
+# Set NLTK path to locally bundled nltk_data directory
+nltk_dir = os.path.join(BASE_DIR, 'nltk_data')
+if nltk_dir not in nltk.data.path:
+    nltk.data.path.insert(0, nltk_dir)
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'))
 
@@ -131,7 +125,7 @@ def init_classifier():
     print("Saved model cache to disk.")
 
 
-# Load classifier at startup for Vercel serverless / WSGI
+# Pre-initialize classifier at startup
 try:
     init_classifier()
 except Exception as e:
