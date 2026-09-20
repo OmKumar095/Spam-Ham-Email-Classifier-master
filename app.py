@@ -3,6 +3,7 @@ import email
 import os
 import pickle
 import re
+import tempfile
 import traceback
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request
@@ -17,6 +18,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_PATH = os.path.join(BASE_DIR, 'DataSets', 'index', 'train.csv')
 MODEL_PATH = os.path.join(BASE_DIR, 'app_model.pkl')
 
+# Configure NLTK data directory (using /tmp on serverless environments like Vercel)
+try:
+    nltk_dir = os.path.join(tempfile.gettempdir(), 'nltk_data')
+    os.makedirs(nltk_dir, exist_ok=True)
+    if nltk_dir not in nltk.data.path:
+        nltk.data.path.append(nltk_dir)
+    nltk.download('stopwords', download_dir=nltk_dir, quiet=True)
+except Exception as e:
+    print(f"NLTK setup note: {e}")
+
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'))
 
 count_vect = None
@@ -26,7 +37,10 @@ clf = None
 
 class StemmedCountVectorizer(CountVectorizer):
     def build_analyzer(self):
-        stemmer = SnowballStemmer("english", ignore_stopwords=True)
+        try:
+            stemmer = SnowballStemmer("english", ignore_stopwords=True)
+        except Exception:
+            stemmer = SnowballStemmer("english")
         analyzer = super(StemmedCountVectorizer, self).build_analyzer()
         return lambda doc: ([stemmer.stem(w) for w in analyzer(doc)])
 
@@ -117,7 +131,7 @@ def init_classifier():
     print("Saved model cache to disk.")
 
 
-# Load classifier at startup for Vercel / serverless / WSGI
+# Load classifier at startup for Vercel serverless / WSGI
 try:
     init_classifier()
 except Exception as e:
