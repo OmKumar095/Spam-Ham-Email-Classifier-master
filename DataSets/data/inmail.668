@@ -1,5 +1,0 @@
-Subject: delivery status notification ( failure )
-From: sender@example.com
-To: recipient@example.com
-
-the following message to was undeliverable .  the reason for the problem :  5 . 1 . 0 - unknown address error 550 - ' 5 . 1 . 1 unknown or illegal alias : gkoppmal @ elp . rr . com '

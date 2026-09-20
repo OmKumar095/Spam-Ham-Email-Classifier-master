@@ -9,3 +9,6 @@ ENV/
 .venv
 .ipynb_checkpoints
 *.csv.original
+
+# Ignore local training email text files
+DataSets/data/

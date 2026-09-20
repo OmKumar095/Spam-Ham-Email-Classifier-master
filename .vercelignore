@@ -1,0 +1,10 @@
+# Ignore dataset files on Vercel
+DataSets/data/
+DataSets/index/train.csv.original
+*.csv.original
+
+# Ignore local caches and notebooks
+__pycache__/
+*.pyc
+Jupyter Notebook/
+Screenshots/
