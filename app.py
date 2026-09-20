@@ -10,6 +10,7 @@ import nltk
 from nltk.stem.snowball import SnowballStemmer
 import numpy as np
 import pandas as pd
+import scipy.sparse as sp
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 
@@ -42,13 +43,22 @@ class StemmedCountVectorizer(CountVectorizer):
 def init_classifier():
     global count_vect, tfidf_transformer, clf
 
-    if count_vect is not None and clf is not None:
+    if count_vect is not None and clf is not None and tfidf_transformer is not None:
         return
 
     if os.path.exists(MODEL_PATH):
         print(f"Loading cached model from {MODEL_PATH}...")
         with open(MODEL_PATH, 'rb') as f:
             count_vect, tfidf_transformer, clf = pickle.load(f)
+
+        # Ensure compatibility across scikit-learn versions (1.4 through 1.7)
+        if hasattr(tfidf_transformer, 'idf_') and not hasattr(tfidf_transformer, '_idf_diag'):
+            n_features = len(tfidf_transformer.idf_)
+            tfidf_transformer._idf_diag = sp.spdiags(
+                tfidf_transformer.idf_, diags=0,
+                m=n_features, n=n_features, format='csr'
+            )
+
         print("Classifier loaded from cache successfully!")
         return
 
@@ -119,6 +129,14 @@ def init_classifier():
 
     print("Training MultinomialNB...")
     clf = MultinomialNB().fit(X_train_tfidf, temails['category'])
+
+    # Ensure cross-version compatibility before saving
+    if hasattr(tfidf_transformer, 'idf_'):
+        n_features = len(tfidf_transformer.idf_)
+        tfidf_transformer._idf_diag = sp.spdiags(
+            tfidf_transformer.idf_, diags=0,
+            m=n_features, n=n_features, format='csr'
+        )
 
     with open(MODEL_PATH, 'wb') as f:
         pickle.dump((count_vect, tfidf_transformer, clf), f)
