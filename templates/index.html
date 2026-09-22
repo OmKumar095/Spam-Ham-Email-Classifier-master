@@ -15,11 +15,56 @@
 		</form>
 	
 		{% if data.status %}
-			<div class="alert alert-success">
+			<div class="alert {% if data.result|upper == 'SPAM' %}alert-danger{% else %}alert-success{% endif %}">
 				<p>{{data.content}}</p>
 			  	<h3><strong>This Email looks like a {{data.result}} </strong></h3>
 			</div>
 		{% endif %}
+
+		<div class="card mt-4 border-info">
+			<div class="card-header bg-info text-white">
+				<h5 class="mb-0">Model Evaluation &amp; Confusion Matrix (Test Set Validation)</h5>
+			</div>
+			<div class="card-body">
+				<p class="text-muted small">
+					<strong>Why a Confusion Matrix is necessary:</strong> Raw accuracy (90.84%) can create a false sense of security due to class imbalance (76% legitimate emails). The confusion matrix reveals exact errors: False Positives (legitimate emails marked spam) vs False Negatives (spam missed).
+				</p>
+				<table class="table table-bordered table-sm text-center mb-3">
+					<thead class="thead-light">
+						<tr>
+							<th rowspan="2" class="align-middle">Actual Label</th>
+							<th colspan="2">Predicted Label</th>
+							<th rowspan="2" class="align-middle">Total</th>
+						</tr>
+						<tr>
+							<th>Ham (Legitimate)</th>
+							<th>Spam</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th>Actual Ham</th>
+							<td class="table-success font-weight-bold">872 <br><small class="text-muted">(TN - 100%)</small></td>
+							<td class="table-danger font-weight-bold">0 <br><small class="text-muted">(FP - 0.0%)</small></td>
+							<td>872</td>
+						</tr>
+						<tr>
+							<th>Actual Spam</th>
+							<td class="table-warning font-weight-bold">105 <br><small class="text-danger font-weight-bold">(FN - 38.3% missed!)</small></td>
+							<td class="table-success font-weight-bold">169 <br><small class="text-muted">(TP - 61.7% caught)</small></td>
+							<td>274</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div class="row text-center font-weight-bold small">
+					<div class="col-3 p-2 bg-light border">Accuracy<br><span class="text-primary font-weight-bold">90.84%</span></div>
+					<div class="col-3 p-2 bg-light border">Spam Precision<br><span class="text-success font-weight-bold">100.0%</span></div>
+					<div class="col-3 p-2 bg-light border">Spam Recall<br><span class="text-warning font-weight-bold">61.68%</span></div>
+					<div class="col-3 p-2 bg-light border">Spam F1-Score<br><span class="text-info font-weight-bold">76.30%</span></div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 </body>

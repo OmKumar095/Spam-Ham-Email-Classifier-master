@@ -12,3 +12,4 @@ ENV/
 
 # Ignore local training email text files
 DataSets/data/
+DataSets/clean_emails_cache.pkl
